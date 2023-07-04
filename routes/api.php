@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GuestPreacherController;
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Models\GuestPreacher;
@@ -32,6 +33,14 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(HospitalController::class)->group(function () {
     Route::post("/create-account", "createAccount");
+});
+
+Route::controller(OrdersController::class)->group(function () {
+
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+        // Route::get("/bulkOrders/{district?}/{date?}/{time?}/{itemsPerPage?}/{lastPage?}/{firstPage?}", "bulkOrders");
+        Route::get("/bulkOrders/{district?}/{date?}/{time?}/{itemsPerPage?}/{status?}/{lastPage?}/{firstPage?}", "bulkOrders");
+    });
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
