@@ -51,6 +51,18 @@ class BloodProductController extends Controller
         dd($request);
     }
 
+    public function getBloodUnit($id)
+    {
+        // Check id if exists
+        $bloodUnit = BloodUnit::where('id', $id)->first();
+        if ($bloodUnit == null) {
+            $result = Result::Error("Record does not exist", 400);
+            return $result;
+        }
+
+        return Result::ReturnObject($bloodUnit, 200, 'Ok');
+    }
+
     // Create blood unit
     public function createBloodUnit(Request $request)
     {
