@@ -37,6 +37,9 @@ class StatusSeeder extends Seeder
             [
                 'name' => 'rejected'
             ],
+            [
+                'name' => 'taken'
+            ],
         ]);
     }
 }
