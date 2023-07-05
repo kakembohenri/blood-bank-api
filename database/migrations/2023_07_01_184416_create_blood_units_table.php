@@ -19,8 +19,7 @@ return new class extends Migration
             $table->foreignId('blood_group')->constrained('blood_groups');
             $table->foreignId('blood_product')->constrained('blood_products');
             $table->foreignId('status_id')->constrained('statuses');
-            $table->string('date_registered');
-            $table->string('date_of_expiry');
+            $table->timestamp('date_of_expiry');
             AuditTrail::UserForeignKeys(($table));
         });
     }

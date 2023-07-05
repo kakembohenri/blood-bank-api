@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendeeController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BloodProductController;
 use App\Http\Controllers\GuestPreacherController;
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\HospitalStaffController;
@@ -35,6 +36,18 @@ Route::controller(HospitalController::class)->group(function () {
     Route::post("/create-account", "createAccount");
 });
 
+// Blood products
+Route::controller(BloodProductController::class)->group(function () {
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+        Route::get("/bloodComponents", "index");
+        Route::get("/getBloodUnit/{id}", "getBloodUnit");
+        Route::post("/createBloodUnit", "createBloodUnit");
+        Route::put("/updateBloodUnit", "updateBloodUnit");
+        Route::delete("/deleteBloodUnit/{id}", "deleteBloodUnit");
+    });
+});
+
+// Hospital staff
 Route::controller(HospitalStaffController::class)->group(function () {
     Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post("/createHospitalStaff", "createHospitalStaff");
