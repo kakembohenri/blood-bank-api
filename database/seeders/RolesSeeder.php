@@ -22,6 +22,9 @@ class RolesSeeder extends Seeder
             [
                 'name' => 'Hospital'
             ],
+            [
+                'name' => 'Doctor'
+            ],
         ]);
     }
 }
