@@ -48,4 +48,21 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    // A user may belong to a hospitalStaff
+    public function hospitalStaff()
+    {
+        return $this->hasOne(HospitalStaff::class);
+    }
+
+    // A user may belong to a hospital
+    public function hospital()
+    {
+        return $this->hasOne(Hospital::class);
+    }
+
+    // Update hospital staff
+    // public function updateStaff(User $user){
+    //     return $this->
+    // }
 }
