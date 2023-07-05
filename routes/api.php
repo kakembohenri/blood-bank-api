@@ -4,6 +4,7 @@ use App\Http\Controllers\AttendeeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GuestPreacherController;
 use App\Http\Controllers\HospitalController;
+use App\Http\Controllers\HospitalStaffController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -32,6 +33,13 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(HospitalController::class)->group(function () {
     Route::post("/create-account", "createAccount");
+});
+
+Route::controller(HospitalStaffController::class)->group(function () {
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+        Route::post("/createHospitalStaff", "createHospitalStaff");
+        Route::put("/updateHospitalStaff", "updateHospitalStaff");
+    });
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
