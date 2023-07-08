@@ -6,6 +6,7 @@ use App\CustomHelper\Result;
 use App\Models\BloodProduct;
 use App\Models\BloodUnit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BloodProductController extends Controller
 {
@@ -96,6 +97,7 @@ class BloodProductController extends Controller
             return Result::ReturnMessage('Blood Unit has been created', 201);
         } catch (\Exception $exp) {
             $result = Result::Error($exp->getMessage(), 500);
+            Log::error($exp->getMessage());
 
             return $result;
         }
