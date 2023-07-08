@@ -55,7 +55,7 @@ class User extends Authenticatable
         return $this->hasOne(HospitalStaff::class);
     }
 
-    // A user may belong to a hospital
+    // A user has one a hospital
     public function hospital()
     {
         return $this->hasOne(Hospital::class);

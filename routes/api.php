@@ -43,7 +43,12 @@ Route::controller(OrdersController::class)->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum']], function () {
         // Route::get("/bulkOrders/{district?}/{date?}/{time?}/{itemsPerPage?}/{lastPage?}/{firstPage?}", "bulkOrders");
-        Route::get("/bulkOrders/{district?}/{date?}/{time?}/{itemsPerPage?}/{status?}/{lastPage?}/{firstPage?}", "bulkOrders");
+        // Get bulk orders
+        Route::get("/bulkOrders", "bulkOrders");
+        // Create bulk orders
+        Route::post("/bulkOrders", "createBulkOrder");
+        // Update bulk orders
+        // Route::put("/bulkOrders", "UpdateBulkOrder");
     });
 });
 

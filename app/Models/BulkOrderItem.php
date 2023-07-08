@@ -5,26 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BulkOrder extends Model
+class BulkOrderItem extends Model
 {
     public $timestamps = false;
 
     use HasFactory;
 
     protected $fillable = [
+        'bulk_order',
+        'blood_unit',
         'hospital_id',
-        'status_id',
-        'orderType',
-        'approved_by',
         'created_at',
         'created_by',
         'modified_at',
         'modified_by'
     ];
 
-    // Bulk order has many bulk order items
-    public function bulkOrderItems()
-    {
-        return $this->HasMany(BulkOrderItems::class);
-    }
+    // A blood unit item has one blood unit
+    // public function bloodUnit()
+    // {
+    //     return $this->hasOne(BloodUnit::class);
+    // }
 }
