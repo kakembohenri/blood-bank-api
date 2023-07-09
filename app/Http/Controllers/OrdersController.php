@@ -8,6 +8,7 @@ use App\Models\BloodProduct;
 use App\Models\BloodUnit;
 use App\Models\BulkOrder;
 use App\Models\BulkOrderItem;
+use App\Models\HospitalInventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -225,6 +226,71 @@ class OrdersController extends Controller
         } catch (\Exception $exp) {
             $result = Result::Error($exp->getMessage(), 400);
             return $result;
+        }
+    }
+
+    // Verify bulk order
+
+    /** TODO 
+     * Approve bulk order
+     * Mark individual blood unit items as taken
+     * Include blood units into hospital inventory
+     */
+
+
+    public function ApproveBulkOrder($id)
+    {
+        try {
+
+            // Check if approver is a blood bank
+            if (auth()->user()['role_id'] != 1) {
+                return Result::Error("Operation can only be done by a blood bank", 400);
+            }
+
+            $bulkOrder = BulkOrder::where('id', $id)->first();
+
+            // Check if bulk order with this id exists
+            if ($bulkOrder == null) {
+                return Result::Error("Bulk order does not exist", 400);
+            }
+
+            DB::beginTransaction();
+
+            // Update bulk order
+            BulkOrder::where('id', $id)->update([
+                'approved_by' => auth()->user()->id,
+                'status_id' => 5,
+                'modified_at' => date('Y:m:d H:i:s', time()),
+                'modified_by' => auth()->user()->id
+            ]);
+
+            // Mark blood units attached to the blood items under this bulk order as taken
+            $bulkOrderItems = BulkOrderItem::where('bulk_order', $id)->get();
+
+            foreach ($bulkOrderItems as $bulkOrderItem) {
+                BloodUnit::where('id', $bulkOrderItem['blood_unit'])->update([
+                    'status_id' => 8,
+                    'modified_by' => auth()->user()->id,
+                    'modified_at' => date('Y:m:d H:i:s', time()),
+                ]);
+
+                // Include blood units into hospital inventory
+                HospitalInventory::create([
+                    'hospital_id' => $bulkOrder['hospital_id'],
+                    'blood_unit' => $bulkOrderItem['blood_unit'],
+                    'status_id' => 3,
+                    'created_at' => date('Y:m:d H:i:s', time()),
+                    'created_by' => auth()->user()->id
+                ]);
+            }
+
+            DB::commit();
+
+            return Result::ReturnMessage('Bulk order has been approved', 204);
+        } catch (\Exception $exp) {
+            DB::rollBack();
+            Log::error($exp->getMessage());
+            return Result::Error("Service Temporarily down", 500);
         }
     }
 }

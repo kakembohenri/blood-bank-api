@@ -49,6 +49,12 @@ Route::controller(OrdersController::class)->group(function () {
         Route::post("/bulkOrders", "createBulkOrder");
         // Update bulk orders
         // Route::put("/bulkOrders", "UpdateBulkOrder");
+        // Approve bulk order
+        Route::put("/approve/bulkOrder/{id}", "ApproveBulkOrder");
+        // Reject bulk order
+        Route::post("/reject", "RejectBulkOrder");
+        // Delete Bulk Order
+        Route::delete("/bulkOrders", "DeleteBulkOrder");
     });
 });
 
