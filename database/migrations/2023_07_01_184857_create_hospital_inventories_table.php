@@ -18,6 +18,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('hospital_id')->constrained('hospitals');
             $table->foreignId('blood_unit')->constrained('blood_units');
+            $table->foreignId('status_id')->constrained('statuses');
             AuditTrail::UserForeignKeys(($table));
         });
     }
