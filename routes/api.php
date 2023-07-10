@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttendeeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BloodProductController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestPreacherController;
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\HospitalStaffController;
@@ -34,8 +35,20 @@ Route::controller(AuthController::class)->group(function () {
     });
 });
 
+// Hospital controller
 Route::controller(HospitalController::class)->group(function () {
     Route::post("/create-account", "createAccount");
+});
+
+// Dashboard controller
+Route::controller(DashboardController::class)->group(function () {
+
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+        // Blood bank dashboard
+        Route::get("/bloodBank/dashboard", "BloodBankDashboard");
+        // Hospital dashboard
+        Route::get("/hospital/dashboard", "HospitalDashboard");
+    });
 });
 
 // Orders controller
