@@ -45,6 +45,8 @@ Route::controller(OrdersController::class)->group(function () {
         // Route::get("/bulkOrders/{district?}/{date?}/{time?}/{itemsPerPage?}/{lastPage?}/{firstPage?}", "bulkOrders");
         // Get bulk orders
         Route::get("/bulkOrders", "bulkOrders");
+        // Get hospital inventory
+        Route::get("/hospitalInventory", "HospitalInventory");
         // Create bulk orders
         Route::post("/bulkOrders", "createBulkOrder");
         // Update bulk orders
