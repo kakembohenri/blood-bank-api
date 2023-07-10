@@ -8,6 +8,7 @@ use App\Models\BloodProduct;
 use App\Models\BloodUnit;
 use App\Models\BulkOrder;
 use App\Models\BulkOrderItem;
+use App\Models\Hospital;
 use App\Models\HospitalInventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,7 @@ class OrdersController extends Controller
             $msg = 'Blood units of blood group: ' . BloodGroup::where('id', $bulkOrderItem['blood_group'])->select('name')->first() .
                 ',component: ' . BloodProduct::where('id', $bulkOrderItem['blood_product'])->select('name')->first() . ' and quantity ' .
                 $bulkOrderItem['quantity'] . ' is over the available limit';
-            $result = Result::Error($msg, 400);
+            $result = Result::Error($msg, 400, false);
             return $result;
         }
 
@@ -42,7 +43,7 @@ class OrdersController extends Controller
             // Check if blood unit already exits in table
             if ($count > 0) {
                 DB::rollBack();
-                $result = Result::Error("A bulk order item must be assigned to a unique blood unit", 400);
+                $result = Result::Error("A bulk order item must be assigned to a unique blood unit", 400, false);
                 return $result;
             }
 
@@ -64,7 +65,7 @@ class OrdersController extends Controller
         // Check if blood unit already exits in table
         if ($count > 0) {
             DB::rollBack();
-            $result = Result::Error("A bulk order item must be assigned to a unique blood unit", 400);
+            $result = Result::Error("A bulk order item must be assigned to a unique blood unit", 400, false);
             return $result;
         }
 
@@ -76,6 +77,12 @@ class OrdersController extends Controller
             'modified_by' => auth()->user()->id
         ]);
     }
+
+    // // Get count of matching blood group and product pair
+    // protected function GetMatchingBloodGroupAndProduct($inventoryItem, $bloodProduct)
+    // {
+    //     if($inventoryItem['blood_group'])
+    // } 
 
     // List bulk orders
     public function bulkOrders($district = "", $date = "", $time = "", $status = 0, $itemsPerPage = 5, $lastPage = 5, $firstPage = 1)
@@ -91,7 +98,75 @@ class OrdersController extends Controller
         */
 
         // TODO: Implement params in get query
-        return Result::ReturnList(BulkOrder::all(), 200, 'Ok');
+        return Result::ReturnList(BulkOrder::all(), 200, 'Ok', true);
+    }
+
+    // List hospital inventory
+    public function HospitalInventory()
+    {
+        try {
+
+            // Blood group variables
+            $A = $AMinus = $B = $BMinus = $AB = $ABMinus = $O = $OMinus = 0;
+
+            // Check if user is hospital or hospital staff
+            $hospitalId = (auth()->user()->hospital != null ? auth()->user()->hospital :
+                auth()->user()->hospitalStaff)['hospital_id'];
+
+            $hospitalInventory = HospitalInventory::where('hospital_id', $hospitalId)->where('status_id', 3)->get();
+
+            $bloodProducts = BloodProduct::all();
+
+            $inventory = [];
+
+            // Get blood units number under respective blood groups
+            foreach ($bloodProducts as $bloodProduct) {
+
+                // Loop through inventory to get blood unit matching blood product
+                foreach ($hospitalInventory as $item) {
+                    $bloodUnit = BloodUnit::where('id', $item['blood_unit'])->first();
+                    if ($bloodUnit['blood_product'] == $bloodProduct['id']) {
+                        if ($bloodUnit['blood_group'] == 1) {
+                            $A += 1;
+                        } else if ($bloodUnit['blood_group'] == 2) {
+                            $AMinus += 1;
+                        } else if ($bloodUnit['blood_group'] == 3) {
+                            $B += 1;
+                        } else if ($bloodUnit['blood_group'] == 4) {
+                            $BMinus += 1;
+                        } else if ($bloodUnit['blood_group'] == 5) {
+                            $AB += 1;
+                        } else if ($bloodUnit['blood_group'] == 6) {
+                            $ABMinus += 1;
+                        } else if ($bloodUnit['blood_group'] == 7) {
+                            $O += 1;
+                        } else if ($bloodUnit['blood_group'] == 8) {
+                            $OMinus += 1;
+                        }
+                    }
+                }
+                $item = [
+                    "blood_product" => $bloodProduct,
+                    "blood_groups" => [
+                        "A" => $A,
+                        "A-" => $AMinus,
+                        "B" => $B,
+                        "B-" => $BMinus,
+                        "AB" => $AB,
+                        "AB-" => $ABMinus,
+                        "O" => $O,
+                        "O-" => $OMinus,
+                    ]
+                ];
+
+                array_push($inventory, $item);
+            }
+
+            return Result::ReturnObject($inventory, 200, "OK", true);
+        } catch (\Exception $exp) {
+            Log::error($exp->getMessage());
+            return Result::Error("Service Temporarily down", 500, false);
+        }
     }
 
     // Create bulk order
@@ -109,7 +184,7 @@ class OrdersController extends Controller
                     'orderItems.*.quantity' => 'required|integer',
                 ]);
             } catch (\Exception $exp) {
-                $result = Result::Error($exp->getMessage(), 400);
+                $result = Result::Error($exp->getMessage(), 400, false);
                 return $result;
             }
 
@@ -117,7 +192,7 @@ class OrdersController extends Controller
 
             // Validate where user is a hospital
             if (auth()->user()->hospital == null) {
-                $result = Result::Error("User does not belong to this hospital!", 400);
+                $result = Result::Error("User does not belong to this hospital!", 400, false);
                 return $result;
             }
 
@@ -147,7 +222,7 @@ class OrdersController extends Controller
                     $msg = 'Blood units of blood group: ' . $bloodGroup->name .
                         ',component: ' . $bloodProduct->name . ' and quantity ' .
                         $bulkOrderItem['quantity'] . ' is over the available limit';
-                    $result = Result::Error($msg, 400);
+                    $result = Result::Error($msg, 400, false);
                     return $result;
                 }
 
@@ -158,7 +233,7 @@ class OrdersController extends Controller
                     // Check if blood unit already exits in table
                     if ($count > 0) {
                         DB::rollBack();
-                        $result = Result::Error("A bulk order item must be assigned to a unique blood unit", 400);
+                        $result = Result::Error("A bulk order item must be assigned to a unique blood unit", 400, false);
                         return $result;
                     }
 
@@ -175,11 +250,11 @@ class OrdersController extends Controller
 
             DB::commit();
 
-            return Result::ReturnMessage('Bulk order has been created', 201);
+            return Result::ReturnMessage('Bulk order has been created', 201, true);
         } catch (\Exception $exp) {
             DB::rollBack();
             Log::error($exp->getMessage());
-            return Result::Error("Service Temporarily down", 500);
+            return Result::Error("Service Temporarily down", 500, false);
         }
     }
 
@@ -199,7 +274,7 @@ class OrdersController extends Controller
                     'newOrderItems.*.blood_unit' => 'required|integer',
                 ]);
             } catch (\Exception $exp) {
-                $result = Result::Error($exp->getMessage(), 400);
+                $result = Result::Error($exp->getMessage(), 400, false);
                 return $result;
             }
 
@@ -222,9 +297,9 @@ class OrdersController extends Controller
 
             DB::commit();
 
-            return Result::ReturnMessage('Bulk order has been created', 201);
+            return Result::ReturnMessage('Bulk order has been created', 201, true);
         } catch (\Exception $exp) {
-            $result = Result::Error($exp->getMessage(), 400);
+            $result = Result::Error($exp->getMessage(), 400, false);
             return $result;
         }
     }
@@ -244,14 +319,14 @@ class OrdersController extends Controller
 
             // Check if approver is a blood bank
             if (auth()->user()['role_id'] != 1) {
-                return Result::Error("Operation can only be done by a blood bank", 400);
+                return Result::Error("Operation can only be done by a blood bank", 400, false);
             }
 
             $bulkOrder = BulkOrder::where('id', $id)->first();
 
             // Check if bulk order with this id exists
             if ($bulkOrder == null) {
-                return Result::Error("Bulk order does not exist", 400);
+                return Result::Error("Bulk order does not exist", 400, false);
             }
 
             DB::beginTransaction();
@@ -286,11 +361,11 @@ class OrdersController extends Controller
 
             DB::commit();
 
-            return Result::ReturnMessage('Bulk order has been approved', 204);
+            return Result::ReturnMessage('Bulk order has been approved', 204, true);
         } catch (\Exception $exp) {
             DB::rollBack();
             Log::error($exp->getMessage());
-            return Result::Error("Service Temporarily down", 500);
+            return Result::Error("Service Temporarily down", 500, false);
         }
     }
 }

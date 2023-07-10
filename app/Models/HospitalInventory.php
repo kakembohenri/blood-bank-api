@@ -20,4 +20,14 @@ class HospitalInventory extends Model
         'modified_at',
         'modified_by',
     ];
+
+    /**
+     * Relationships
+     */
+
+    //  Belongs to a blood unit
+    public function bloodunit()
+    {
+        return $this->belongsTo(BloodUnit::class);
+    }
 }
