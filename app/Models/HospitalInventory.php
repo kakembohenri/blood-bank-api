@@ -30,4 +30,6 @@ class HospitalInventory extends Model
     {
         return $this->belongsTo(BloodUnit::class);
     }
+
+    // 
 }

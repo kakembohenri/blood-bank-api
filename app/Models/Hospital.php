@@ -20,4 +20,13 @@ class Hospital extends Model
         'modified_at',
         'modified_by'
     ];
+
+    /**
+     * MODEL RELATIONSHIPS
+     */
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
