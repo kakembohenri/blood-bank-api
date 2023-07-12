@@ -56,7 +56,7 @@ class DashboardController extends Controller
      * - staff blood orders
      * - total blood units recieved from the blood bank
      * - hospital inventory
-     * 
+     * - get number of patients who have recieved money
      */
     public function HospitalDashboard()
     {
@@ -82,7 +82,6 @@ class DashboardController extends Controller
             foreach (HospitalStaff::where('hospital_id', $hospital['id'])->get() as $staff) {
                 $staffBloodOrders += HospitalStaffBloodOrder::where('hospital_staff', $staff['id'])->get()->count();
             }
-            // HospitalStaffBloodOrder::where('hospital_id', $hospital['id'])->get()->count();
 
             // Total blood units recieved from blood bank
             $bloodUnits = 0;
@@ -95,29 +94,28 @@ class DashboardController extends Controller
             $hospitalInventory = HospitalInventory::where("hospital_id", $hospital['id'])->get();
 
             // Get blood units number under respective blood groups
-            // foreach (BloodGroup::all() as $bloodGroup) {
-            //     // Loop through inventory to get blood unit matching blood product
-            //     foreach ($hospitalInventory as $item) {
-            //         $bloodUnit = BloodUnit::where('id', $item['blood_unit'])->first();
-            //         if ($bloodUnit['blood_group'] == 1) {
-            //             $A += 1;
-            //         } else if ($bloodUnit['blood_group'] == 2) {
-            //             $AMinus += 1;
-            //         } else if ($bloodUnit['blood_group'] == 3) {
-            //             $B += 1;
-            //         } else if ($bloodUnit['blood_group'] == 4) {
-            //             $BMinus += 1;
-            //         } else if ($bloodUnit['blood_group'] == 5) {
-            //             $AB += 1;
-            //         } else if ($bloodUnit['blood_group'] == 6) {
-            //             $ABMinus += 1;
-            //         } else if ($bloodUnit['blood_group'] == 7) {
-            //             $O += 1;
-            //         } else if ($bloodUnit['blood_group'] == 8) {
-            //             $OMinus += 1;
-            //         }
-            //     }
-            // }
+            foreach ($hospitalInventory as $item) {
+                $bloodUnit = BloodUnit::where('id', $item['blood_unit'])->first();
+                if ($bloodUnit['blood_group'] == 1) {
+                    $A += 1;
+                } else if ($bloodUnit['blood_group'] == 2) {
+                    $AMinus += 1;
+                } else if ($bloodUnit['blood_group'] == 3) {
+                    $B += 1;
+                } else if ($bloodUnit['blood_group'] == 4) {
+                    $BMinus += 1;
+                } else if ($bloodUnit['blood_group'] == 5) {
+                    $AB += 1;
+                } else if ($bloodUnit['blood_group'] == 6) {
+                    $ABMinus += 1;
+                } else if ($bloodUnit['blood_group'] == 7) {
+                    $O += 1;
+                } else if ($bloodUnit['blood_group'] == 8) {
+                    $OMinus += 1;
+                }
+            }
+
+            $inventorySize = $hospitalInventory->count();
 
             $obj = [
                 "hospital" => $hospital,
@@ -126,16 +124,40 @@ class DashboardController extends Controller
                 "staffBloodOrders" => $staffBloodOrders,
                 "bloodUnitsFromBank" => $bloodUnits,
                 "hospitalInventory" => $hospitalInventory->count(),
-                // "blood_groups" => [
-                //     "A" => $A,
-                //     "A-" => $AMinus,
-                //     "B" => $B,
-                //     "B-" => $BMinus,
-                //     "AB" => $AB,
-                //     "AB-" => $ABMinus,
-                //     "O" => $O,
-                //     "O-" => $OMinus,
-                // ]
+                "blood_groups" => [
+                    [
+                        "group" => "A",
+                        "percentage" => ($A / $inventorySize) * 100
+                    ],
+                    [
+                        "group" => "A-",
+                        "percentage" => ($AMinus / $inventorySize) * 100
+                    ],
+                    [
+                        "group" => "B",
+                        "percentage" => ($B / $inventorySize) * 100
+                    ],
+                    [
+                        "group" => "B-",
+                        "percentage" => ($BMinus / $inventorySize) * 100
+                    ],
+                    [
+                        "group" => "AB",
+                        "percentage" => ($AB / $inventorySize) * 100,
+                    ],
+                    [
+                        "group" => "AB-",
+                        "percentage" => ($ABMinus / $inventorySize) * 100,
+                    ],
+                    [
+                        "group" => "O",
+                        "percentage" => ($O / $inventorySize) * 100
+                    ],
+                    [
+                        "group" => "O-",
+                        "percentage" => ($OMinus * $inventorySize) * 100
+                    ]
+                ]
             ];
 
             return Result::ReturnObject($obj, 200, "Hospital dashboard", true);
