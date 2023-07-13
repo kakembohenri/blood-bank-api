@@ -65,4 +65,56 @@ class AuthController extends Controller
             return Result::Error("Logout Operation failed", 500, false);
         }
     }
+
+    /** VERIFY HOSPITAL ACCOUNT
+     * ENDPOINT: /verify-hospital
+     * METHOD: PUT
+     * TODO
+     * - update user status id to that of verified which is 1
+     */
+    public function VerifyHospital($id)
+    {
+        try {
+            // Check if user exists
+            $user = User::where('id', $id)->first();
+
+            if ($user == null) {
+                return Result::ReturnMessage("User does not exists", 400, false);
+            }
+
+            // Update hospital users status from unverified to verified
+            $user->update(['status_id' => 1]);
+
+            return Result::ReturnMessage("Hospital account successfully verified", 204, true);
+        } catch (\Exception $exp) {
+            Log::error($exp->getMessage());
+            return Result::Error("Service Temporarily Unavailable", 500, false);
+        }
+    }
+
+    /** REJECT HOSPITAL ACCOUNT
+     * ENDPOINT: /reject-hospital
+     * METHOD: PUT
+     * TODO
+     * - update user status id to that of rejected which is 7
+     */
+    public function RejectHospital($id)
+    {
+        try {
+            // Check if user exists
+            $user = User::where('id', $id)->first();
+
+            if ($user == null) {
+                return Result::ReturnMessage("User does not exists", 400, false);
+            }
+
+            // Update hospital users status from unverified to rejected
+            $user->update(['status_id' => 7]);
+
+            return Result::ReturnMessage("Hospital account successfully rejected", 204, true);
+        } catch (\Exception $exp) {
+            Log::error($exp->getMessage());
+            return Result::Error("Service Temporarily Unavailable", 500, false);
+        }
+    }
 }

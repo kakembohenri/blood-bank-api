@@ -32,6 +32,12 @@ Route::controller(AuthController::class)->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post("/logout", "logout");
+
+        // Verify hospital accounts
+        Route::put("/verify-hospital/{id}", "VerifyHospital");
+
+        // Reject hospital accounts
+        Route::put("/reject-hospital/{id}", "RejectHospital");
     });
 });
 
