@@ -30,7 +30,7 @@ class HospitalController extends Controller
                     'password.confirm' => 'Passwords do not match!',
                 ]);
             } catch (\Illuminate\Validation\ValidationException $e) {
-                $result = Result::Error($e->validator->errors(), 400);
+                $result = Result::Error($e->validator->errors(), 400, false);
 
                 return $result;
             }
@@ -62,11 +62,11 @@ class HospitalController extends Controller
 
             DB::commit();
 
-            return Result::ReturnMessage("Account successfully created. Please wait for account verification", 201);
+            return Result::ReturnMessage("Account successfully created. Please wait for account verification", 201, true);
         } catch (\Exception $exp) {
             DB::rollBack();
 
-            $result = Result::Error($exp->getMessage(), 400);
+            $result = Result::Error($exp->getMessage(), 400, false);
 
             return $result;
         }
