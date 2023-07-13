@@ -36,10 +36,25 @@ class DashboardController extends Controller
                 return Result::Error("User is not the blood bank", 400, false);
             }
 
+            // Get new hospital accounts that require verification
+            $accounts = User::where('role_id', 2)->where('status_id', 2)->get();
+
+            $hospitalAccountsToVerfiy = [];
+
+            foreach ($accounts as $account) {
+                $item = [
+                    'msg' => $account->hospital->name . ' has created an account. Please assess their details',
+                    'data' => $account
+                ];
+
+                array_push($hospitalAccountsToVerfiy, $item);
+            }
+
             $dashboard = [
                 'hospital' => Hospital::all()->count(),
                 'orders' => BulkOrder::where('status_id', 3)->where('approved_by', null)->get()->count() + HospitalStaffBloodOrder::where('status_id', 3)->where('approved_by', null)->get()->count(),
-                'blood_units' => BloodUnit::where('date_of_expiry', '>=', date('Y-m-d', time()))->where('status_id', 3)->get()->count()
+                'blood_units' => BloodUnit::where('date_of_expiry', '>=', date('Y-m-d', time()))->where('status_id', 3)->get()->count(),
+                "notifications" => count($hospitalAccountsToVerfiy) == 0 ? null : $hospitalAccountsToVerfiy
             ];
 
             return Result::ReturnObject($dashboard, 200, "Blood Bank Dashboard", true);
@@ -57,6 +72,7 @@ class DashboardController extends Controller
      * - total blood units recieved from the blood bank
      * - hospital inventory
      * - get number of patients who have recieved money
+     * - include notifications for new hospital accounts
      */
     public function HospitalDashboard()
     {
@@ -115,6 +131,8 @@ class DashboardController extends Controller
                 }
             }
 
+
+
             $inventorySize = $hospitalInventory->count();
 
             $obj = [
@@ -157,7 +175,8 @@ class DashboardController extends Controller
                         "group" => "O-",
                         "percentage" => ($OMinus * $inventorySize) * 100
                     ]
-                ]
+                ],
+
             ];
 
             return Result::ReturnObject($obj, 200, "Hospital dashboard", true);
