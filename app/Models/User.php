@@ -61,6 +61,12 @@ class User extends Authenticatable
         return $this->hasOne(Hospital::class);
     }
 
+    // Belongs to a role
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
     // Update hospital staff
     // public function updateStaff(User $user){
     //     return $this->

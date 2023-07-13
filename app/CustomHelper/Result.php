@@ -70,12 +70,12 @@ class Result
         return $result;
     }
 
-    public static function Error($msg, $StatusCode, $success)
+    public static function Error($msg, $StatusCode)
     {
         $result = [
             "msg" => $msg,
             "StatusCode" => $StatusCode,
-            "success" => $success
+            "success" => false
         ];
 
         return $result;
