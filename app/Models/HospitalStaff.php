@@ -19,4 +19,21 @@ class HospitalStaff extends Model
         'modified_at',
         'modified_by'
     ];
+
+
+    /** DATABASE RELATIONSHIPS
+     * 
+     */
+
+    // Belongs to a user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Belongs to a hospital
+    public function hospital()
+    {
+        return $this->belongsTo(Hospital::class);
+    }
 }

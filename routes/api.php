@@ -93,9 +93,19 @@ Route::controller(BloodProductController::class)->group(function () {
 // Hospital staff
 Route::controller(HospitalStaffController::class)->group(function () {
     Route::group(['middleware' => ['auth:sanctum']], function () {
-        Route::post("/createHospitalStaff", "createHospitalStaff");
-        Route::put("/updateHospitalStaff", "updateHospitalStaff");
+        // Get hospital staff
+        Route::get("/hospital-staff", "GetHospitalStaff");
+        // Create hospital staff
+        Route::post("/hospital-staff", "CreateHospitalStaff");
+        // Update hospital staff
+        Route::put("/hospital-staff", "UpdateHospitalStaff");
     });
+});
+
+// Role
+Route::controller(RoleController::class)->group(function () {
+    // Fetch roles
+    Route::get("/roles", "FetchRoles");
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
