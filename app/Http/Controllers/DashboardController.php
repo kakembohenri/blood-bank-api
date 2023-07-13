@@ -30,7 +30,6 @@ class DashboardController extends Controller
     {
         try {
 
-
             // Check if user is the blood bank
             if (auth()->user()->role_id != 1) {
                 return Result::Error("User is not the blood bank", 400, false);
@@ -131,8 +130,6 @@ class DashboardController extends Controller
                 }
             }
 
-
-
             $inventorySize = $hospitalInventory->count();
 
             $obj = [
@@ -145,35 +142,35 @@ class DashboardController extends Controller
                 "blood_groups" => [
                     [
                         "group" => "A",
-                        "percentage" => ($A / $inventorySize) * 100
+                        "percentage" => $inventorySize === 0 ? 0 : ($A / $inventorySize) * 100
                     ],
                     [
                         "group" => "A-",
-                        "percentage" => ($AMinus / $inventorySize) * 100
+                        "percentage" => $inventorySize === 0 ? 0 : ($AMinus / $inventorySize) * 100
                     ],
                     [
                         "group" => "B",
-                        "percentage" => ($B / $inventorySize) * 100
+                        "percentage" => $inventorySize === 0 ? 0 : ($B / $inventorySize) * 100
                     ],
                     [
                         "group" => "B-",
-                        "percentage" => ($BMinus / $inventorySize) * 100
+                        "percentage" => $inventorySize === 0 ? 0 : ($BMinus / $inventorySize) * 100
                     ],
                     [
                         "group" => "AB",
-                        "percentage" => ($AB / $inventorySize) * 100,
+                        "percentage" => $inventorySize === 0 ? 0 : ($AB / $inventorySize) * 100,
                     ],
                     [
                         "group" => "AB-",
-                        "percentage" => ($ABMinus / $inventorySize) * 100,
+                        "percentage" => $inventorySize === 0 ? 0 : ($ABMinus / $inventorySize) * 100,
                     ],
                     [
                         "group" => "O",
-                        "percentage" => ($O / $inventorySize) * 100
+                        "percentage" => $inventorySize === 0 ? 0 : ($O / $inventorySize) * 100
                     ],
                     [
                         "group" => "O-",
-                        "percentage" => ($OMinus * $inventorySize) * 100
+                        "percentage" => $inventorySize === 0 ? 0 : ($OMinus * $inventorySize) * 100
                     ]
                 ],
 
