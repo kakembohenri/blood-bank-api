@@ -36,7 +36,15 @@ class AuthController extends Controller
                 return $result;
             }
 
-
+            // Check status of user
+            switch ($userExists['status_id']) {
+                case 2:
+                    return Result::Error('Your account has not yet been verified', 400, false);
+                case 7:
+                    return Result::Error('Your account was rejected! Get you blood from else where', 400, false);
+                default:
+                    break;
+            }
             $token = $userExists->createToken('myApp')->plainTextToken;
 
             $returnObject = [
