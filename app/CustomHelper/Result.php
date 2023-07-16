@@ -33,38 +33,36 @@ class Result
     }
 
 
-    public static function ReturnMessage($msg, $statusCode, $success)
+    public static function ReturnMessage($msg, $statusCode)
     {
         $result = [
             "msg" => $msg,
             "StatusCode" => $statusCode,
-            "success" => $success
-
+            "success" => true
         ];
 
         return $result;
     }
 
-    public static function ReturnObject($object, $statusCode, $msg, $success)
+    public static function ReturnObject($object, $statusCode, $msg)
     {
         $result = [
             "msg" => $msg,
             "result" => $object,
             "StatusCode" => $statusCode,
-            "success" => $success
-
+            "success" => true
         ];
 
         return $result;
     }
 
-    public static function ReturnList($list, $statusCode, $msg, $success)
+    public static function ReturnList($list, $statusCode, $msg)
     {
         $result = [
             "msg" => $msg,
             "result" => $list,
             "StatusCode" => $statusCode,
-            "success" => $success
+            "success" => true
         ];
 
         return $result;

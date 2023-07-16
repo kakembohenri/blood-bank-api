@@ -31,7 +31,7 @@ class AuthController extends Controller
             $userExists = User::where('password', $newPassword)->where('email', $request->email)->first();
 
             if ($userExists == null) {
-                $result = Result::ReturnMessage("Invalid Credentials", 400, false);
+                $result = Result::Error("Invalid Credentials", 400);
 
                 return $result;
             }

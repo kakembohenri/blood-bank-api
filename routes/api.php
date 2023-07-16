@@ -82,7 +82,7 @@ Route::controller(OrdersController::class)->group(function () {
 // Blood products
 Route::controller(BloodProductController::class)->group(function () {
     Route::group(['middleware' => ['auth:sanctum']], function () {
-        Route::get("/bloodComponents", "index");
+        Route::get("/bloodProducts", "index");
         Route::get("/getBloodUnit/{id}", "getBloodUnit");
         Route::post("/createBloodUnit", "createBloodUnit");
         Route::put("/updateBloodUnit", "updateBloodUnit");

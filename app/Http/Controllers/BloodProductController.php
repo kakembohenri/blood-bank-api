@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\CustomHelper\Result;
+use App\Models\BloodGroup;
 use App\Models\BloodProduct;
 use App\Models\BloodUnit;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class BloodProductController extends Controller
         try {
             $bloodProducts = BloodProduct::all();
 
-            // Get blood units number under respective blood groups
+            // Get blood units number under respective blood components
             foreach ($bloodProducts as $bloodProduct) {
                 $count = BloodUnit::where([
                     ['blood_product', $bloodProduct->id],
@@ -27,7 +28,25 @@ class BloodProductController extends Controller
                 $bloodProduct['count'] = $count;
             }
 
-            return Result::ReturnList($bloodProducts, 200, "Ok");
+            $bloodGroups = BloodGroup::all();
+
+            // Get blood units number under respective blood groups
+            foreach ($bloodGroups as $bloodGroup) {
+                $count = BloodUnit::where([
+                    ['blood_group', $bloodGroup->id],
+                    ['date_of_expiry', '>=', date('Y-m-d', time())],
+                    ['status_id', '!=', 8]
+                ])->count();
+
+                $bloodGroup['count'] = $count;
+            }
+
+            $bloodComponents = [
+                'blood_products' => $bloodProducts,
+                'blood_groups' => $bloodGroups
+            ];
+
+            return Result::ReturnList($bloodComponents, 200, "Ok");
         } catch (\Exception $exp) {
             $result = Result::Error($exp->getMessage(), 500);
 
