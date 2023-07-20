@@ -368,4 +368,101 @@ class OrdersController extends Controller
             return Result::Error("Service Temporarily down", 500, false);
         }
     }
+
+    /** PREVIOUS BULK ORDER
+     * DESCRIPTION: Endpoint for getting previous bulk order details
+     * ENDPOINT: /previous-order
+     * METHOD: GET
+     * TODO
+     * - get previous bulk order which is approved
+     * - get bulk order items under that bulk order
+     * - determine the blood units those bulk order items fall under
+     * - return a list of objects with blood products and their count
+     * 
+     * @return [
+     *  'blood_component': [
+     *  'WB' => ['UnitsPreviouslyIssued' => 0, 'UnitsUsed' => 0, 'UnitsExpired' => 0]
+     * ]
+     * ]
+     */
+
+    public function PreviousBulkOrder()
+    {
+        try {
+            // Blood component variables
+            $WBUnitsPreviouslyIssued = $PRBCsUnitsPreviouslyIssued = $FFPUnitsPreviouslyIssued = $FPUnitsPreviouslyIssued = $PLTUnitsPreviouslyIssued = $CRYOUnitsPreviouslyIssued = 0;
+            $WBUnitsUsed = $PRBCsUnitsUsed = $FFPUnitsUsed = $FPUnitsUsed = $PLTUnitsUsed = $CRYOUnitsUsed = 0;
+            $WBUnitsExpired = $PRBCsUnitsExpired = $FFPUnitsExpired = $FPUnitsExpired = $PLTUnitsExpired = $CRYOUnitsExpired = 0;
+
+            $bloodComponents = [
+                'WB' => ['UnitsPreviouslyIssued' => $WBUnitsPreviouslyIssued, 'UnitsUsed' => $WBUnitsUsed, 'UnitsExpired' => $WBUnitsExpired],
+                'PRBCs' => ['UnitsPreviouslyIssued' => $PRBCsUnitsPreviouslyIssued, 'UnitsUsed' => $PRBCsUnitsUsed, 'UnitsExpired' => $PRBCsUnitsExpired],
+                'FFP' => ['UnitsPreviouslyIssued' => $FFPUnitsPreviouslyIssued, 'UnitsUsed' => $FFPUnitsUsed, 'UnitsExpired' => $FFPUnitsExpired],
+                'FP' => ['UnitsPreviouslyIssued' => $FPUnitsPreviouslyIssued, 'UnitsUsed' => $FPUnitsUsed, 'UnitsExpired' => $FPUnitsExpired],
+                'PLT' => ['UnitsPreviouslyIssued' => $PLTUnitsPreviouslyIssued, 'UnitsUsed' => $PLTUnitsUsed, 'UnitsExpired' => $PLTUnitsExpired],
+                'CRYO' => ['UnitsPreviouslyIssued' => $CRYOUnitsPreviouslyIssued, 'UnitsUsed' => $CRYOUnitsUsed, 'UnitsExpired' => $CRYOUnitsExpired],
+            ];
+
+            // Get most recent approved bulk order
+            $bulkOrder = BulkOrder::where('hospital_id', auth()->user()->hospital->id)->where('status_id', 5)->orderBy('created_at', 'asc')->first();
+
+            // Get bulk order items
+            if ($bulkOrder != null) {
+                $bulkOrderItems = BulkOrderItem::where('bulk_order', $bulkOrder['id'])->get();
+                // Get blood units for the respective bulk order items
+                foreach ($bulkOrderItems as $bulkOrderItem) {
+                    $bloodUnit = BloodUnit::where('id', $bulkOrderItem->blood_unit)->first();
+                    // Set units previously issued
+                    switch ($bloodUnit->blood_product) {
+                        case 1:
+                            $WBUnitsPreviouslyIssued++;
+                            break;
+                        case 2:
+                            $PRBCsUnitsPreviouslyIssued++;
+                            break;
+                        case 3:
+                            $FFPUnitsPreviouslyIssued++;
+                            break;
+                        case 4:
+                            $FPUnitsPreviouslyIssued++;
+                            break;
+                        case 5:
+                            $PLTUnitsPreviouslyIssued++;
+                            break;
+                        case 6:
+                            $CRYOUnitsPreviouslyIssued++;
+                            break;
+                    }
+                    // Get units which have been used
+                    $inventoryItem = $bloodUnit->hospital_inventory;
+                    if ($inventoryItem->status_id == 8) {
+                        switch ($bloodUnit->blood_product) {
+                            case 1:
+                                $WBUnitsUsed++;
+                                break;
+                            case 2:
+                                $PRBCsUnitsUsed++;
+                                break;
+                            case 3:
+                                $FFPUnitsUsed++;
+                                break;
+                            case 4:
+                                $FPUnitsUsed++;
+                                break;
+                            case 5:
+                                $PLTUnitsUsed++;
+                                break;
+                            case 6:
+                                $CRYOUnitsUsed++;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            return Result::ReturnObject($bloodComponents, 200, 'Ok');
+        } catch (\Exception $exp) {
+            return Result::InternalServerError($exp);
+        }
+    }
 }

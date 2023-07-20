@@ -7,9 +7,13 @@ use App\Models\Hospital;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class HospitalController extends Controller
 {
+    /** CREATE HOSPITAL ACCOUNT
+     * 
+     */
     public function createAccount(Request $request)
     {
         try {
@@ -20,6 +24,8 @@ class HospitalController extends Controller
                     'name' => 'required|string',
                     'phone' => 'required|string|min:10|max:10|unique:users',
                     'location' => 'required|string',
+                    'FacilityCode' => 'required|string',
+                    'District' => 'required|string',
                     'password' => 'required|confirmed|min:6',
                     // 'password_confirmation' => 'required|min:6'
                 ], [
@@ -70,5 +76,34 @@ class HospitalController extends Controller
 
             return $result;
         }
+    }
+
+    /** GET HOSPITAL VIA TOKEN
+     * DESCRIPTION: Get a logged in users hospital details
+     * ENDPOINT: /hospital-details
+     * METHOD: GET
+     * - get hospital details via logged in user id
+     */
+
+    public function HospitalDetails()
+    {
+        try {
+            return Result::ReturnObject(['user' => auth()->user(), 'hospital' => auth()->user()->hospital], 200, 'Ok');
+        } catch (\Exception $exp) {
+            Log::error($exp->getMessage());
+            return Result::Error('Service Temporarily Unavailable', 500);
+        }
+    }
+
+    /** GET HOSPITAL BY LOOGED IN USER ID
+     * DESCRIPTION: Responsible for getting a hospital via the logged in user id
+     * ENDPOINT: /hospital
+     * METHOD: GET
+     * TODO
+     * - get hospital with matching user id to the logged in users
+     */
+
+    public function GetHospitalByUserId()
+    {
     }
 }

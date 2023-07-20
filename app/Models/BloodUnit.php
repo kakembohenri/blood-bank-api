@@ -21,4 +21,26 @@ class BloodUnit extends Model
         'modified_at',
         'modified_by'
     ];
+
+    /** RELATIONSHIPS
+     * 
+     */
+
+    // has one hospital inventory
+    public function hospital_inventory()
+    {
+        return $this->hasOne(HospitalInventory::class, 'blood_unit', 'id');
+    }
+
+    // belongs to one status
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
+
+    // belongs to one blood group
+    public function blood_group()
+    {
+        return $this->belongsTo(BloodGroup::class, 'blood_group', 'id');
+    }
 }

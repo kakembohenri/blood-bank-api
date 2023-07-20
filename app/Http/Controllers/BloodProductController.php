@@ -54,6 +54,22 @@ class BloodProductController extends Controller
         }
     }
 
+    // Get blood units under blood products
+    public function GetBloodComponent($bloodComponentId)
+    {
+        try {
+            $bloodUnits = BloodUnit::where('blood_product', $bloodComponentId)->where('status_id', 3)->get();
+            foreach ($bloodUnits as $bloodUnit) {
+                $bloodUnit['StatusName'] = $bloodUnit->status->name;
+                $bloodUnit['BloodGroup'] = BloodGroup::where('id', $bloodUnit['blood_group'])->select('name')->first()['name'];
+                $bloodUnit['UnitId'] = 'BU' . $bloodUnit->id;
+            }
+            return Result::ReturnObject($bloodUnits, 200, 'Ok');
+        } catch (\Exception $exp) {
+            return Result::InternalServerError($exp);
+        }
+    }
+
     public function bloodUnits(Request $request)
     {
         /* Params
@@ -185,6 +201,15 @@ class BloodProductController extends Controller
             $result = Result::Error($exp->getMessage(), 500);
 
             return $result;
+        }
+    }
+
+    // fetch blood units
+    public function FetchBloodUnits()
+    {
+        try {
+        } catch (\Exception $exp) {
+            return Result::InternalServerError($exp);
         }
     }
 }
