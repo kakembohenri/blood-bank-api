@@ -21,9 +21,13 @@ class BulkOrderItem extends Model
         'modified_by'
     ];
 
-    // A blood unit item has one blood unit
-    // public function bloodUnit()
-    // {
-    //     return $this->hasOne(BloodUnit::class);
-    // }
+    /** RELATIONSHIPS
+     * 
+     */
+
+    // belongs to group unit
+    public function blood_unit()
+    {
+        return $this->belongsTo(BloodUnit::class);
+    }
 }

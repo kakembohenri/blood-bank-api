@@ -2,6 +2,8 @@
 
 namespace App\CustomHelper;
 
+use Illuminate\Support\Facades\Log;
+
 class Result
 {
 
@@ -41,7 +43,7 @@ class Result
             "success" => true
         ];
 
-        return $result;
+        return response()->json($result, $statusCode);
     }
 
     public static function ReturnObject($object, $statusCode, $msg)
@@ -53,7 +55,7 @@ class Result
             "success" => true
         ];
 
-        return $result;
+        return response()->json($result, $statusCode);
     }
 
     public static function ReturnList($list, $statusCode, $msg)
@@ -65,17 +67,23 @@ class Result
             "success" => true
         ];
 
-        return $result;
+        return response()->json($result, $statusCode);
     }
 
-    public static function Error($msg, $StatusCode)
+    public static function Error($msg, $statusCode)
     {
         $result = [
             "msg" => $msg,
-            "StatusCode" => $StatusCode,
+            "StatusCode" => $statusCode,
             "success" => false
         ];
 
-        return $result;
+        return response()->json($result, $statusCode);
+    }
+
+    public static function InternalServerError($exp)
+    {
+        Log::error($exp->getMessage());
+        return response()->json('Service is temporarily Unavailable', 500);
     }
 }

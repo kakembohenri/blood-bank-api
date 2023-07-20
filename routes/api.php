@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Users controller
+// Auth controller
 Route::controller(AuthController::class)->group(function () {
     Route::post("/login", "login");
 
@@ -43,12 +43,16 @@ Route::controller(AuthController::class)->group(function () {
 
 // Hospital controller
 Route::controller(HospitalController::class)->group(function () {
+    // Get by hospital
+    Route::get("/hospital-details", "HospitalDetails")->middleware('auth:sanctum');
+    // Create hospital
     Route::post("/create-account", "createAccount");
+    // Get hospital by user id
+    Route::get("/hospital", "GetHospitalByUserId")->middleware('auth:sanctum');
 });
 
 // Dashboard controller
 Route::controller(DashboardController::class)->group(function () {
-
     Route::group(['middleware' => ['auth:sanctum']], function () {
         // Blood bank dashboard
         Route::get("/bloodBank/dashboard", "BloodBankDashboard");
@@ -59,7 +63,6 @@ Route::controller(DashboardController::class)->group(function () {
 
 // Orders controller
 Route::controller(OrdersController::class)->group(function () {
-
     Route::group(['middleware' => ['auth:sanctum']], function () {
         // Route::get("/bulkOrders/{district?}/{date?}/{time?}/{itemsPerPage?}/{lastPage?}/{firstPage?}", "bulkOrders");
         // Get bulk orders
@@ -76,6 +79,8 @@ Route::controller(OrdersController::class)->group(function () {
         Route::post("/reject", "RejectBulkOrder");
         // Delete Bulk Order
         Route::delete("/bulkOrders", "DeleteBulkOrder");
+        // Get previous bulk order
+        Route::get("/previous-order", "PreviousBulkOrder");
     });
 });
 
@@ -83,6 +88,8 @@ Route::controller(OrdersController::class)->group(function () {
 Route::controller(BloodProductController::class)->group(function () {
     Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get("/bloodProducts", "index");
+        Route::get("/blood-units", "FetchBloodUnits");
+        Route::get("/bloodProduct/{bloodComponentId}", "GetBloodComponent");
         Route::get("/getBloodUnit/{id}", "getBloodUnit");
         Route::post("/createBloodUnit", "createBloodUnit");
         Route::put("/updateBloodUnit", "updateBloodUnit");
@@ -106,8 +113,4 @@ Route::controller(HospitalStaffController::class)->group(function () {
 Route::controller(RoleController::class)->group(function () {
     // Fetch roles
     Route::get("/roles", "FetchRoles");
-});
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
 });
