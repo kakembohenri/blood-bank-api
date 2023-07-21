@@ -80,7 +80,7 @@ Route::controller(OrdersController::class)->group(function () {
         // Delete Bulk Order
         Route::delete("/bulkOrders", "DeleteBulkOrder");
         // Get previous bulk order
-        Route::get("/previous-order", "PreviousBulkOrder");
+        Route::get("/previous-bulkOrder", "PreviousBulkOrder");
     });
 });
 

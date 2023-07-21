@@ -394,14 +394,7 @@ class OrdersController extends Controller
             $WBUnitsUsed = $PRBCsUnitsUsed = $FFPUnitsUsed = $FPUnitsUsed = $PLTUnitsUsed = $CRYOUnitsUsed = 0;
             $WBUnitsExpired = $PRBCsUnitsExpired = $FFPUnitsExpired = $FPUnitsExpired = $PLTUnitsExpired = $CRYOUnitsExpired = 0;
 
-            $bloodComponents = [
-                'WB' => ['UnitsPreviouslyIssued' => $WBUnitsPreviouslyIssued, 'UnitsUsed' => $WBUnitsUsed, 'UnitsExpired' => $WBUnitsExpired],
-                'PRBCs' => ['UnitsPreviouslyIssued' => $PRBCsUnitsPreviouslyIssued, 'UnitsUsed' => $PRBCsUnitsUsed, 'UnitsExpired' => $PRBCsUnitsExpired],
-                'FFP' => ['UnitsPreviouslyIssued' => $FFPUnitsPreviouslyIssued, 'UnitsUsed' => $FFPUnitsUsed, 'UnitsExpired' => $FFPUnitsExpired],
-                'FP' => ['UnitsPreviouslyIssued' => $FPUnitsPreviouslyIssued, 'UnitsUsed' => $FPUnitsUsed, 'UnitsExpired' => $FPUnitsExpired],
-                'PLT' => ['UnitsPreviouslyIssued' => $PLTUnitsPreviouslyIssued, 'UnitsUsed' => $PLTUnitsUsed, 'UnitsExpired' => $PLTUnitsExpired],
-                'CRYO' => ['UnitsPreviouslyIssued' => $CRYOUnitsPreviouslyIssued, 'UnitsUsed' => $CRYOUnitsUsed, 'UnitsExpired' => $CRYOUnitsExpired],
-            ];
+
 
             // Get most recent approved bulk order
             $bulkOrder = BulkOrder::where('hospital_id', auth()->user()->hospital->id)->where('status_id', 5)->orderBy('created_at', 'asc')->first();
@@ -459,6 +452,15 @@ class OrdersController extends Controller
                     }
                 }
             }
+
+            $bloodComponents = [
+                ['id' => 1, 'bloodProduct' => 'WB', 'UnitsPreviouslyIssued' => $WBUnitsPreviouslyIssued, 'UnitsUsed' => $WBUnitsUsed, 'UnitsExpired' => $WBUnitsExpired, 'BalanceInStock' => ($WBUnitsPreviouslyIssued - $WBUnitsUsed), 'UnitsReturned' => 0],
+                ['id' => 2, 'bloodProduct' => 'PRBCs',  'UnitsPreviouslyIssued' => $PRBCsUnitsPreviouslyIssued, 'UnitsUsed' => $PRBCsUnitsUsed, 'UnitsExpired' => $PRBCsUnitsExpired, 'BalanceInStock' => ($PRBCsUnitsPreviouslyIssued - $PRBCsUnitsUsed), 'UnitsReturned' => 0],
+                ['id' => 3, 'bloodProduct' => 'FFP', 'UnitsPreviouslyIssued' => $FFPUnitsPreviouslyIssued, 'UnitsUsed' => $FFPUnitsUsed, 'UnitsExpired' => $FFPUnitsExpired, 'BalanceInStock' => ($FFPUnitsPreviouslyIssued - $FFPUnitsUsed), 'UnitsReturned' => 0],
+                ['id' => 4, 'bloodProduct' => 'FP', 'UnitsPreviouslyIssued' => $FPUnitsPreviouslyIssued, 'UnitsUsed' => $FPUnitsUsed, 'UnitsExpired' => $FPUnitsExpired, 'BalanceInStock' => ($FPUnitsPreviouslyIssued - $FPUnitsUsed), 'UnitsReturned' => 0],
+                ['id' => 5, 'bloodProduct' => 'PLT', 'UnitsPreviouslyIssued' => $PLTUnitsPreviouslyIssued, 'UnitsUsed' => $PLTUnitsUsed, 'UnitsExpired' => $PLTUnitsExpired, 'BalanceInStock' => ($PLTUnitsPreviouslyIssued - $PLTUnitsUsed), 'UnitsReturned' => 0],
+                ['id' => 6, 'bloodProduct' => 'CRYO', 'UnitsPreviouslyIssued' => $CRYOUnitsPreviouslyIssued, 'UnitsUsed' => $CRYOUnitsUsed, 'UnitsExpired' => $CRYOUnitsExpired, 'BalanceInStock' => ($CRYOUnitsPreviouslyIssued - $CRYOUnitsUsed), 'UnitsReturned' => 0],
+            ];
 
             return Result::ReturnObject($bloodComponents, 200, 'Ok');
         } catch (\Exception $exp) {
