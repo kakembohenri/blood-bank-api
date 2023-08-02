@@ -95,7 +95,7 @@ class DashboardController extends Controller
             $staffBloodOrders = 0;
 
             foreach (HospitalStaff::where('hospital_id', $hospital['id'])->get() as $staff) {
-                $staffBloodOrders += HospitalStaffBloodOrder::where('hospital_staff', $staff['id'])->get()->count();
+                $staffBloodOrders += HospitalStaffBloodOrder::where('hospital_staff_id', $staff['id'])->get()->count();
             }
 
             // Total blood units recieved from blood bank

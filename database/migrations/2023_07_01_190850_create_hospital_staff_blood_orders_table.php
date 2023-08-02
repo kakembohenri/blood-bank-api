@@ -16,13 +16,17 @@ return new class extends Migration
     {
         Schema::create('hospital_staff_blood_orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hospital_staff')->constrained('hospital_staff');
-            $table->foreignId('patient_id')->constrained('patients');
-            $table->foreignId('blood_product')->constrained('blood_products');
-            $table->foreignId('blood_group')->constrained('blood_groups');
+            $table->foreignId('hospital_staff_id')->constrained('hospital_staff')->cascadeOnDelete();
+            $table->foreignId('hospital_id')->constrained('hospitals')->cascadeOnDelete();
+            $table->string('patient_name');
+            $table->integer('patient_age');
+            $table->string('patient_email')->nullable();
+            $table->string('patient_phone');
+            $table->foreignId('blood_group_id')->constrained('blood_groups')->cascadeOnDelete();
+            $table->foreignId('blood_component_id')->constrained('blood_products')->cascadeOnDelete();
+            $table->integer('quantity');
             $table->foreignId('status_id')->constrained('statuses');
-            $table->foreignId('approved_by')->constrained('users');
-            $table->string('amount');
+            $table->foreignId('approved_by')->nullable()->constrained('users');
             AuditTrail::UserForeignKeys($table);
         });
     }

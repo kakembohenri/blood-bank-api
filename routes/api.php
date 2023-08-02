@@ -44,7 +44,7 @@ Route::controller(AuthController::class)->group(function () {
 // Hospital controller
 Route::controller(HospitalController::class)->group(function () {
     // Get by hospital
-    Route::get("/hospital-details", "HospitalDetails")->middleware('auth:sanctum');
+    Route::get("/hospital-details/{hospitalId}", "HospitalDetails")->middleware('auth:sanctum');
     // Create hospital
     Route::post("/create-account", "createAccount");
     // Get hospital by user id
@@ -70,17 +70,27 @@ Route::controller(OrdersController::class)->group(function () {
         // Get hospital inventory
         Route::get("/hospitalInventory", "HospitalInventory");
         // Create bulk orders
-        Route::post("/bulkOrders", "createBulkOrder");
+        Route::post("/bulkOrders", "CreateBulkOrder");
         // Update bulk orders
         // Route::put("/bulkOrders", "UpdateBulkOrder");
         // Approve bulk order
         Route::put("/approve/bulkOrder/{id}", "ApproveBulkOrder");
         // Reject bulk order
-        Route::post("/reject", "RejectBulkOrder");
+        Route::put("/reject/bulkOrder/{id}", "RejectBulkOrder");
         // Delete Bulk Order
         Route::delete("/bulkOrders", "DeleteBulkOrder");
         // Get previous bulk order
-        Route::get("/previous-bulkOrder", "PreviousBulkOrder");
+        Route::get("/previous-bulkOrder/{hospitalId}", "PreviousBulkOrder");
+        // Fetch bulk order details
+        Route::get('/bulkOrder-details/{id}', 'BulkOrderDetails');
+
+
+        // Hospital staff orders
+        Route::post("/hospital-staff-order", "PlaceHospitalStaffOrder");
+        // Fetch hospital staff orders
+        Route::get("/hospital-staff-order", "FetchHospitalStaffOrders");
+        // Approve hospital order
+        Route::put("/hospital-staff-order/approve/{id}", "ApproveStaffOrder");
     });
 });
 

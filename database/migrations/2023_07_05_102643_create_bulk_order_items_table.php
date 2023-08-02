@@ -17,7 +17,9 @@ return new class extends Migration
         Schema::create('bulk_order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('bulk_order')->constrained('bulk_orders')->cascadeOnDelete();
-            $table->foreignId('blood_unit')->constrained('blood_units');
+            $table->foreignId('bloodGroup_id')->constrained('blood_groups')->cascadeOnDelete();
+            $table->foreignId('bloodComponent_id')->constrained('blood_products')->cascadeOnDelete();
+            $table->integer('quantity');
             AuditTrail::UserForeignKeys($table);
         });
     }

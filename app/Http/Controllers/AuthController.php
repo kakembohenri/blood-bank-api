@@ -49,7 +49,8 @@ class AuthController extends Controller
 
             $returnObject = [
                 "token" => $token,
-                "user" => $userExists
+                "user" => $userExists,
+                "hospital" => $userExists->hospital
             ];
 
             $result = Result::ReturnObject($returnObject, 200, "Login succesfull", true);

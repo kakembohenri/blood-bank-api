@@ -13,8 +13,9 @@ class BulkOrderItem extends Model
 
     protected $fillable = [
         'bulk_order',
-        'blood_unit',
-        'hospital_id',
+        'bloodGroup_id',
+        'bloodComponent_id',
+        'quantity',
         'created_at',
         'created_by',
         'modified_at',
@@ -29,5 +30,17 @@ class BulkOrderItem extends Model
     public function blood_unit()
     {
         return $this->belongsTo(BloodUnit::class);
+    }
+
+    // belongs to blood component
+    public function BloodComponent()
+    {
+        return $this->belongsTo(BloodProduct::class, 'bloodComponent_id', 'id');
+    }
+
+    // belongs to blood group
+    public function BloodGroup()
+    {
+        return $this->belongsTo(BloodGroup::class, 'bloodGroup_id', 'id');
     }
 }
