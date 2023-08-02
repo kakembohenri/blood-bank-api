@@ -85,10 +85,10 @@ class HospitalController extends Controller
      * - get hospital details via logged in user id
      */
 
-    public function HospitalDetails()
+    public function HospitalDetails($hospitalId)
     {
         try {
-            return Result::ReturnObject(['user' => auth()->user(), 'hospital' => auth()->user()->hospital], 200, 'Ok');
+            return Result::ReturnObject(['user' => auth()->user(), 'hospital' => Hospital::where('id', $hospitalId)->first()], 200, 'Ok');
         } catch (\Exception $exp) {
             Log::error($exp->getMessage());
             return Result::Error('Service Temporarily Unavailable', 500);

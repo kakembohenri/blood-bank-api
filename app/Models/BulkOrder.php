@@ -14,6 +14,7 @@ class BulkOrder extends Model
     protected $fillable = [
         'hospital_id',
         'status_id',
+        'health_stamp',
         'orderType',
         'approved_by',
         'created_at',
@@ -26,5 +27,29 @@ class BulkOrder extends Model
     public function bulkOrderItems()
     {
         return $this->HasMany(BulkOrderItems::class);
+    }
+
+    // Belongs to status
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
+
+    // Belongs to user
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'approved_by', 'id');
+    }
+
+    // Belongs to bulk order type
+    public function OrderTypes()
+    {
+        return $this->belongsTo(OrderTypes::class, 'orderType', 'id');
+    }
+
+    // Belongs to hospital
+    public function hospital()
+    {
+        return $this->belongsTo(Hospital::class);
     }
 }
