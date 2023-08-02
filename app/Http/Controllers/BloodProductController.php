@@ -58,7 +58,11 @@ class BloodProductController extends Controller
     public function GetBloodComponent($bloodComponentId)
     {
         try {
-            $bloodUnits = BloodUnit::where('blood_product', $bloodComponentId)->where('status_id', 3)->get();
+            $bloodUnits = BloodUnit::where([
+                ['blood_product', $bloodComponentId],
+                ['date_of_expiry', '>=', date('Y-m-d', time())],
+                ['status_id', '!=', 8]
+            ])->get();
             foreach ($bloodUnits as $bloodUnit) {
                 $bloodUnit['StatusName'] = $bloodUnit->status->name;
                 $bloodUnit['BloodGroup'] = BloodGroup::where('id', $bloodUnit['blood_group'])->select('name')->first()['name'];

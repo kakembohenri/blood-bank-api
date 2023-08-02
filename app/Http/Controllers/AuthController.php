@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\CustomHelper\Result;
+use App\Mail\AcceptHospital;
+use App\Mail\RejectHospital;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -79,6 +82,7 @@ class AuthController extends Controller
      * ENDPOINT: /verify-hospital
      * METHOD: PUT
      * TODO
+     * - send email notifying the hospital that their account has been accepted
      * - update user status id to that of verified which is 1
      */
     public function VerifyHospital($id)
@@ -91,10 +95,17 @@ class AuthController extends Controller
                 return Result::ReturnMessage("User does not exists", 400, false);
             }
 
+            try {
+                Mail::to($user['email'])->send(new AcceptHospital());
+            } catch (\Exception $exp) {
+                Log::error($exp->getMessage());
+                return Result::Error('Email could not be sent', 400);
+            }
+
             // Update hospital users status from unverified to verified
             $user->update(['status_id' => 1]);
 
-            return Result::ReturnMessage("Hospital account successfully verified", 204, true);
+            return Result::ReturnMessage("Hospital account successfully verified", 200, true);
         } catch (\Exception $exp) {
             Log::error($exp->getMessage());
             return Result::Error("Service Temporarily Unavailable", 500, false);
@@ -117,10 +128,18 @@ class AuthController extends Controller
                 return Result::ReturnMessage("User does not exists", 400, false);
             }
 
+
+            try {
+                Mail::to($user['email'])->send(new RejectHospital());
+            } catch (\Exception $exp) {
+                Log::error($exp->getMessage());
+                return Result::Error('Email could not be sent', 400);
+            }
+
             // Update hospital users status from unverified to rejected
             $user->update(['status_id' => 7]);
 
-            return Result::ReturnMessage("Hospital account successfully rejected", 204, true);
+            return Result::ReturnMessage("Hospital account successfully rejected", 200, true);
         } catch (\Exception $exp) {
             Log::error($exp->getMessage());
             return Result::Error("Service Temporarily Unavailable", 500, false);

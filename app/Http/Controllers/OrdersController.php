@@ -18,7 +18,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rules\File;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ApprovedOrder;
+
 
 class OrdersController extends Controller
 {
@@ -169,7 +171,7 @@ class OrdersController extends Controller
             $bulkOrders = null;
 
             if (auth()->user()->role_id == 1) {
-                $bulkOrders = BulkOrder::get();
+                $bulkOrders = BulkOrder::orderBy('created_at', 'desc')->get();
 
                 foreach ($bulkOrders as $bulkOrder) {
                     $bulkOrder['DateSubmitted'] = date('d.m.Y', strtotime($bulkOrder['created_at']));
@@ -426,16 +428,19 @@ class OrdersController extends Controller
             foreach ($request->orderItems as $bulkOrderItem) {
                 $bloodComponent = BloodProduct::where('name', $bulkOrderItem['component'])->first()['id'];
                 $bloodGroup = BloodGroup::where('name', $bulkOrderItem['group'])->first()['id'];
-                Log::info($bloodGroup);
 
-                BulkOrderItem::create([
-                    'bulk_order' => $bulkOrder['id'],
-                    'bloodGroup_id' => $bloodGroup,
-                    'bloodComponent_id' => $bloodComponent,
-                    'quantity' => $bulkOrderItem['quantity'],
-                    'created_at' => date('Y:m:d H:i:s', time()),
-                    'created_by' => auth()->user()->id
-                ]);
+                if ($bulkOrderItem['quantity'] != -1) {
+                    if ($bulkOrderItem['quantity'] != 0) {
+                        BulkOrderItem::create([
+                            'bulk_order' => $bulkOrder['id'],
+                            'bloodGroup_id' => $bloodGroup,
+                            'bloodComponent_id' => $bloodComponent,
+                            'quantity' => $bulkOrderItem['quantity'],
+                            'created_at' => date('Y:m:d H:i:s', time()),
+                            'created_by' => auth()->user()->id
+                        ]);
+                    }
+                }
             }
 
             DB::commit();
@@ -582,6 +587,15 @@ class OrdersController extends Controller
                 'signature' => $this->handleFiles($request->signature),
                 'created_at' => date('Y:m:d H:i:s', time()),
             ]);
+
+            $email = $bulkOrder->hospital->user['email'];
+
+            try {
+                Mail::to($email)->send(new ApprovedOrder());
+            } catch (\Exception $exp) {
+                DB::rollBack();
+                return Result::Error('Email cannot be sent', 400);
+            }
 
             DB::commit();
 
@@ -741,6 +755,7 @@ class OrdersController extends Controller
                 $request->validate([
                     'patient_name' => 'required|string',
                     'patient_age' => 'required|integer',
+                    'patient_gender' => 'required|string|in:Male,Female',
                     'patient_email' => 'sometimes|email',
                     'patient_phone' => 'required|string',
                     'blood_group_id' => 'required|integer|exists:blood_groups,id',
@@ -803,7 +818,7 @@ class OrdersController extends Controller
                     $order['component'] = $order->bloodComponent->name;
                     if (($order->status_id == 3 || $order->status_id == 4)) {
                         $pending++;
-                    } else if ($order->status_id == 5) {
+                    } else if ($order->status_id == 8) {
                         $processed++;
                     }
                 }
@@ -886,9 +901,17 @@ class OrdersController extends Controller
                     ]);
                 } else {
                     DB::rollBack();
-                    return Result::Error('The Blood Bank doesnt have enough units to satisfy this request', 400);
+                    return Result::Error('The Hospital Inventory does not have enough units to satisfy this request', 400);
                 }
             }
+
+            // Update status of hospital staff order
+
+            $order->update([
+                'status_id' => 8,
+                'modified_by' => auth()->user()->id,
+                'modified_at' => date('Y:m:d H:i:s', time())
+            ]);
 
             DB::commit();
 

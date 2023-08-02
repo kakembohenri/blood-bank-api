@@ -62,13 +62,15 @@ class HospitalController extends Controller
                 'user_id' => $user->id,
                 'name' => $request->name,
                 'location' => $request->location,
+                'FacilityCode' => $request->FacilityCode,
+                'District' => $request->District,
                 'created_at' => date('Y:m:d H:i:s', time()),
                 'created_by' => $user->id,
             ]);
 
             DB::commit();
 
-            return Result::ReturnMessage("Account successfully created. Please wait for account verification", 201, true);
+            return Result::ReturnMessage("Account successfully created. Please wait for account verification by the blood bank", 201, true);
         } catch (\Exception $exp) {
             DB::rollBack();
 

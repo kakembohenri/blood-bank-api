@@ -16,6 +16,7 @@ class HospitalStaffBloodOrder extends Model
         'hospital_id',
         'patient_name',
         'patient_age',
+        'patient_gender',
         'patient_email',
         'patient_phone',
         'blood_group_id',
