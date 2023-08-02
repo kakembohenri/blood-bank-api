@@ -13,7 +13,6 @@ use App\Models\HospitalStaff;
 use App\Models\HospitalStaffBloodOrder;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
-use PhpParser\Node\Stmt\Return_;
 
 class DashboardController extends Controller
 {
@@ -23,12 +22,18 @@ class DashboardController extends Controller
      * - get hospital count
      * - get count of all orders
      * - get count of blood units
-     * Wait for clarification on others
+     * - display blood components and how they have been used
      */
 
     public function BloodBankDashboard()
     {
         try {
+
+            // blood component variables
+            $WB = $PRBCs = $FFP = $FP = $PLT = $CRYO = 0;
+
+            // blood groups variables
+            $A = $AM = $B = $BM = $AB = $ABM = $O = $OM = 0;
 
             // Check if user is the blood bank
             if (auth()->user()->role_id != 1) {
@@ -49,7 +54,82 @@ class DashboardController extends Controller
                 array_push($hospitalAccountsToVerfiy, $item);
             }
 
+            // Get all blood units that have a status of taken
+            // group them by their blood components
+
+            $bloodUnits = BloodUnit::where('status_id', 8)->get();
+
+            foreach ($bloodUnits as $bloodUnit) {
+                switch ($bloodUnit['blood_product']) {
+                    case 1:
+                        $WB++;
+                        break;
+                    case 2:
+                        $PRBCs++;
+                        break;
+                    case 3:
+                        $FFP;
+                        break;
+                    case 4:
+                        $FP;
+                        break;
+                    case 5:
+                        $PLT++;
+                        break;
+                    case 6:
+                        $CRYO++;
+                        break;
+                    default:
+                        break;
+                }
+
+                switch ($bloodUnit['blood_group']) {
+                    case 1:
+                        $A++;
+                        break;
+                    case 2:
+                        $AM++;
+                        break;
+                    case 3:
+                        $B++;
+                        break;
+                    case 4:
+                        $BM++;
+                        break;
+                    case 5:
+                        $AB++;
+                        break;
+                    case 6:
+                        $ABM++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            $barChartGroups = [
+                ['groups' => 'A', 'quantity' => $A],
+                ['groups' => 'A-', 'quantity' => $AM],
+                ['groups' => 'B', 'quantity' => $B],
+                ['groups' => 'B-', 'quantity' => $BM],
+                ['groups' => 'AB', 'quantity' => $AB],
+                ['groups' => 'AB-', 'quantity' => $ABM],
+                ['groups' => 'O', 'quantity' => $O],
+                ['groups' => 'OM', 'quantity' => $OM],
+            ];
+
+            $barChartComponents = [
+                ['component' => 'WB', 'quantity' => $WB],
+                ['component' => 'PRBCs', 'quantity' => $PRBCs],
+                ['component' => 'FFP', 'quantity' => $FFP],
+                ['component' => 'FP', 'quantity' => $FP],
+                ['component' => 'PLT', 'quantity' => $PLT],
+                ['component' => 'CRYO', 'quantity' => $CRYO],
+            ];
+
             $dashboard = [
+                'barChartComponents' => $barChartComponents,
+                'barChartGroups' => $barChartGroups,
                 'hospital' => Hospital::all()->count(),
                 'orders' => BulkOrder::where('status_id', 3)->where('approved_by', null)->get()->count() + HospitalStaffBloodOrder::where('status_id', 3)->where('approved_by', null)->get()->count(),
                 'blood_units' => BloodUnit::where('date_of_expiry', '>=', date('Y-m-d', time()))->where('status_id', 3)->get()->count(),
@@ -77,9 +157,15 @@ class DashboardController extends Controller
     {
         try {
 
+            // months
+            $jan = $feb = $mar = $apr = $may = $jun = $jul = $aug = $sep = $oct = $nov = $dec = 0;
+
+            // genders
+            $male = $female = 0;
+
             // Get hospital details
             $hospital = (auth()->user()->hospital != null ? auth()->user()->hospital :
-                auth()->user()->hospitalStaff);
+                auth()->user()->hospitalStaff->hospital);
 
             if ($hospital == null) {
                 return Result::Error("User is neither a hospital nor a hospital staff member", 400, false);
@@ -91,6 +177,21 @@ class DashboardController extends Controller
             // Hospital orders for blood
             $orders = BulkOrder::where('hospital_id', $hospital['id'])->get();
 
+            // get orders which have been approved
+            $approvedOrders = [];
+
+            if (auth()->user()->hospitalStaff == null) {
+                foreach ($orders->where('status_id', 5) as $order) {
+
+                    $item = [
+                        'msg' => 'Acknowledege the delivery of this bulk order',
+                        'data' => $order
+                    ];
+
+                    array_push($approvedOrders, $item);
+                }
+            }
+
             // Get staff blood orders
             $staffBloodOrders = 0;
 
@@ -99,11 +200,9 @@ class DashboardController extends Controller
             }
 
             // Total blood units recieved from blood bank
-            $bloodUnits = 0;
+            $recievedFromBank = 0;
 
-            foreach ($orders as $order) {
-                $bloodUnits += BulkOrderItem::where("bulk_order", $order['id'])->get()->count();
-            }
+            $recievedFromBank = HospitalInventory::where("hospital_id", $hospital['id'])->get()->count();
 
             // Hospital inventory
             $hospitalInventory = HospitalInventory::where("hospital_id", $hospital['id'])->get();
@@ -132,12 +231,90 @@ class DashboardController extends Controller
 
             $inventorySize = $hospitalInventory->count();
 
+            $patients = HospitalStaffBloodOrder::where('hospital_id', $hospital['id'])->get();
+
+            foreach ($patients as $patient) {
+                switch ($patient['patient_gender']) {
+                    case 'Male':
+                        $male++;
+                        break;
+                    case 'Female':
+                        $female++;
+                        break;
+                    default:
+                        break;
+                }
+
+                switch (strtolower(date('M', strtotime($patient['created_at'])))) {
+                    case 'jan':
+                        $jan++;
+                        break;
+                    case 'feb':
+                        $feb++;
+                        break;
+                    case 'mar':
+                        $mar++;
+                        break;
+                    case 'apr':
+                        $apr++;
+                        break;
+                    case 'may':
+                        $may++;
+                        break;
+                    case 'jun':
+                        $jun++;
+                        break;
+                    case 'jul':
+                        $jul++;
+                        break;
+                    case 'aug':
+                        $aug++;
+                        break;
+                    case 'sep';
+                        $sep++;
+                        break;
+                    case 'oct':
+                        $oct++;
+                        break;
+                    case 'nov':
+                        $nov++;
+                        break;
+                    case 'dec':
+                        $dec++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            $barChart = [
+                ['month' => 'Jan', 'count' => $jan],
+                ['month' => 'Feb', 'count' => $feb],
+                ['month' => 'Mar', 'count' => $mar],
+                ['month' => 'Apr', 'count' => $apr],
+                ['month' => 'May', 'count' => $may],
+                ['month' => 'Jun', 'count' => $jun],
+                ['month' => 'Jul', 'count' => $jul],
+                ['month' => 'Aug', 'count' => $aug],
+                ['month' => 'Sep', 'count' => $sep],
+                ['month' => 'Oct', 'count' => $oct],
+                ['month' => 'Nov', 'count' => $nov],
+                ['month' => 'Dec', 'count' => $dec],
+            ];
+
+            $pieChart = [
+                ['id' => 'Female', "label" => 'Female', 'color' => "hsl(104, 70%, 50%)", 'value' => $female],
+                ['id' => 'Male', "label" => 'Male', 'color' => "hsl(291, 70%, 50%)", 'value' => $male],
+            ];
+
             $obj = [
+                "pieChart" => $pieChart,
+                "barChart" => $barChart,
                 "hospital" => $hospital,
                 "hospital_user" => User::where('id', $hospital['user_id'])->first(),
                 "orders" => $orders->count(),
                 "staffBloodOrders" => $staffBloodOrders,
-                "bloodUnitsFromBank" => $bloodUnits,
+                "bloodUnitsFromBank" => $recievedFromBank,
                 "hospitalInventory" => $hospitalInventory->count(),
                 "blood_groups" => [
                     [
@@ -173,7 +350,7 @@ class DashboardController extends Controller
                         "percentage" => $inventorySize === 0 ? 0 : ($OMinus * $inventorySize) * 100
                     ]
                 ],
-
+                "notifications" => count($approvedOrders) == 0 ? null : $approvedOrders
             ];
 
             return Result::ReturnObject($obj, 200, "Hospital dashboard", true);
